@@ -1,0 +1,66 @@
+@page "/owners"
+@using MudBlazor
+@using CoolShool.WebUI
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 px-8">
+    <div class="d-flex flex-column mb-8">
+        <MudText Typo="Typo.h4" Style="font-family: 'Outfit'; font-weight: 700; letter-spacing: -0.02em; color: var(--mud-palette-text-primary);">
+            Gestão de Responsáveis
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+            Cadastre e gerencie os responsáveis financeiros pelos planos de pagamento.
+        </MudText>
+    </div>
+
+    <MudTable Items="@_owners" Loading="@_loading" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" 
+              Class="mud-elevation-0 border-1 border-solid mud-border-lines-default rounded-xl" 
+              Style="overflow: hidden;"
+              Filter="new Func<IGetFinancialOwners_FinancialOwners, bool>(FilterFunc)">
+        <ToolBarContent>
+            <div class="d-flex align-center gap-4 w-100 py-3">
+                <MudTextField @bind-Value="_searchString" Immediate="true" Placeholder="Buscar responsável..." 
+                              Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" 
+                              Class="max-w-md bg-surface rounded-lg" />
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" 
+                           OnClick="OpenCreateDialog" Class="rounded-pill px-6 py-2">
+                    Novo Responsável
+                </MudButton>
+            </div>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Nome</MudTh>
+            <MudTh Style="text-align: right; padding-right: 24px;">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">#@context.Id</MudText>
+            </MudTd>
+            <MudTd DataLabel="Nome">
+                <MudText Typo="Typo.body1" Style="font-weight: 600;">@context.Name</MudText>
+            </MudTd>
+            <MudTd DataLabel="Ações" Style="text-align: right; padding-right: 16px;">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" Variant="Variant.Text" OnClick="@(() => OpenEditDialog(context))" Class="mr-2" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Variant="Variant.Text" OnClick="@(() => ConfirmDelete(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <div class="pa-8 text-center">
+                <MudIcon Icon="@Icons.Material.Filled.PeopleOutline" Size="Size.Large" Color="Color.Default" />
+                <MudText Class="mt-2" Color="Color.Secondary">Nenhum responsável encontrado.</MudText>
+            </div>
+        </NoRecordsContent>
+        <LoadingContent>
+            <div class="pa-8 text-center">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+                <MudText Class="mt-2" Color="Color.Primary">Carregando responsáveis...</MudText>
+            </div>
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager InfoFormat="{first_item}-{last_item} de {all_items}" RowsPerPageString="Linhas por página:" Class="pt-2" />
+        </PagerContent>
+    </MudTable>
+</MudContainer>
+

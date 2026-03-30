@@ -1,0 +1,138 @@
+query GetDashboardData {
+  financialOwners {
+    id
+    name
+  }
+  paymentPlans {
+    id
+    totalAmount
+    financialOwnerId
+    costCenterId
+    billings {
+      id
+      amount
+      status
+      dueDate
+    }
+  }
+  costCenters {
+    id
+    type
+    name
+    displayName
+  }
+}
+
+query GetPaymentPlans {
+  paymentPlans {
+    id
+    totalAmount
+    financialOwnerId
+    costCenterId
+    financialOwner {
+      id
+      name
+    }
+    costCenter {
+      id
+      displayName
+    }
+    billings {
+      id
+      amount
+      dueDate
+      status
+      paymentMethod
+    }
+  }
+}
+
+query GetFinancialOwners {
+  financialOwners {
+    id
+    name
+  }
+}
+
+query GetBillingsByOwner($ownerId: Long!) {
+  billingsByOwner(ownerId: $ownerId) {
+    id
+    amount
+    dueDate
+    status
+    paymentMethod
+    paymentCode
+    isOverdue
+  }
+}
+
+query GetBillings {
+  billings {
+    id
+    amount
+    dueDate
+    status
+    paymentMethod
+    paymentCode
+    isOverdue
+  }
+}
+
+mutation CreateFinancialOwner($name: String!) {
+  createFinancialOwner(input: { name: $name }) {
+    id
+    name
+  }
+}
+
+mutation UpdateFinancialOwner($id: Long!, $name: String!) {
+  updateFinancialOwner(id: $id, input: { name: $name }) {
+    id
+    name
+  }
+}
+
+mutation DeleteFinancialOwner($id: Long!) {
+  deleteFinancialOwner(id: $id)
+}
+
+mutation CreateCostCenter($type: CostCenterType!, $name: String) {
+  createCostCenter(input: { type: $type, name: $name }) {
+    id
+    displayName
+  }
+}
+
+mutation UpdateCostCenter($id: Long!, $type: CostCenterType!, $name: String) {
+  updateCostCenter(id: $id, input: { type: $type, name: $name }) {
+    id
+    displayName
+  }
+}
+
+mutation DeleteCostCenter($id: Long!) {
+  deleteCostCenter(id: $id)
+}
+
+mutation RegisterPayment($billingId: Long!, $amount: Decimal!, $paymentDate: DateTime) {
+  registerPayment(billingId: $billingId, input: { amount: $amount, paymentDate: $paymentDate })
+}
+
+mutation CancelCharge($billingId: Long!) {
+  cancelCharge(billingId: $billingId)
+}
+
+mutation CreatePaymentPlan($financialOwnerId: Long!, $costCenterId: Long!, $billings: [CreateBillingRequestInput!]!) {
+  createPaymentPlan(input: { financialOwnerId: $financialOwnerId, costCenterId: $costCenterId, billings: $billings }) {
+    id
+    totalAmount
+    billings {
+      id
+      amount
+      dueDate
+      paymentMethod
+      status
+      paymentCode
+    }
+  }
+}

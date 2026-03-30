@@ -1,0 +1,171 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"Representa o responsável financeiro pelos planos de pagamento."
+type FinancialOwner {
+  id: Long!
+  name: String!
+  "Lista de planos de pagamento associados a este responsável."
+  paymentPlans: [PaymentPlan!]!
+}
+
+"Representa um plano de pagamento contendo várias cobranças."
+type PaymentPlan {
+  id: Long!
+  financialOwnerId: Long!
+  costCenterId: Long!
+  totalAmount: Decimal!
+  "As cobranças (parcelas) deste plano."
+  billings: [Billing!]!
+  financialOwner: FinancialOwner!
+  costCenter: CostCenter!
+}
+
+"Representa uma cobrança individual ou parcela."
+type Billing {
+  id: Long!
+  amount: Decimal!
+  dueDate: DateTime!
+  status: BillingStatus!
+  paymentMethod: PaymentType!
+  isOverdue: Boolean!
+  paymentPlanId: Long!
+  plan: PaymentPlan!
+  paymentCode: String!
+  payments: [Payment!]!
+}
+
+"The `Long` scalar type represents non-fractional signed whole 64-bit numeric values. Long can represent values between -(2^63) and 2^63 - 1."
+scalar Long
+
+"The `Decimal` scalar type represents a decimal floating-point number."
+scalar Decimal
+
+"The `DateTime` scalar represents an ISO-8601 compliant date time type."
+scalar DateTime
+
+enum BillingStatus {
+  ISSUED
+  PAID
+  CANCELLED
+}
+
+enum PaymentType {
+  BOLETO
+  PIX
+}
+
+type Query {
+  financialOwners: [FinancialOwner!]!
+  financialOwnerById(id: Long!): FinancialOwner
+  paymentPlans: [PaymentPlan!]!
+  costCenters: [CostCenter!]!
+  billings: [Billing!]!
+  billingsByOwner(ownerId: Long!): [Billing!]!
+  billingCountByOwner(ownerId: Long!): Int!
+}
+
+type Mutation {
+  createFinancialOwner(input: CreateFinancialOwnerRequestInput!): FinancialOwnerResponse!
+  createPaymentPlan(input: CreatePaymentPlanRequestInput!): PaymentPlanResponse!
+  updateFinancialOwner(id: Long! input: UpdateFinancialOwnerRequestInput!): FinancialOwnerResponse!
+  deleteFinancialOwner(id: Long!): Boolean!
+  createCostCenter(input: CreateCostCenterRequestInput!): CostCenterResponse!
+  updateCostCenter(id: Long! input: UpdateCostCenterRequestInput!): CostCenterResponse!
+  deleteCostCenter(id: Long!): Boolean!
+  registerPayment(billingId: Long! input: RegisterPaymentRequestInput!): Boolean!
+  cancelCharge(billingId: Long!): Boolean!
+}
+
+type CostCenter {
+  id: Long!
+  type: CostCenterType!
+  name: String
+  paymentPlans: [PaymentPlan!]!
+  displayName: String!
+}
+
+type Payment {
+  id: Long!
+  billingId: Long!
+  billing: Billing!
+  paymentDate: DateTime!
+  amount: Decimal!
+}
+
+input UpdateFinancialOwnerRequestInput {
+  name: String!
+}
+
+input CreatePaymentPlanRequestInput {
+  financialOwnerId: Long!
+  costCenterId: Long!
+  billings: [CreateBillingRequestInput!]!
+}
+
+type PaymentPlanResponse {
+  id: Long!
+  financialOwnerId: Long!
+  costCenterId: Long!
+  totalAmount: Decimal!
+  billings: [BillingResponse!]!
+}
+
+input CreateFinancialOwnerRequestInput {
+  name: String!
+}
+
+type FinancialOwnerResponse {
+  id: Long!
+  name: String!
+}
+
+type CostCenterResponse {
+  id: Long!
+  type: CostCenterType!
+  name: String
+  displayName: String!
+}
+
+input CreateCostCenterRequestInput {
+  type: CostCenterType!
+  name: String
+}
+
+input UpdateCostCenterRequestInput {
+  type: CostCenterType!
+  name: String
+}
+
+input RegisterPaymentRequestInput {
+  amount: Decimal!
+  paymentDate: DateTime
+}
+
+enum CostCenterType {
+  MATRICULA
+  MENSALIDADE
+  MATERIAL
+  OUTRO
+}
+
+type BillingResponse {
+  id: Long!
+  amount: Decimal!
+  dueDate: DateTime!
+  paymentMethod: PaymentType!
+  status: BillingStatus!
+  paymentCode: String!
+  isOverdue: Boolean!
+}
+
+input CreateBillingRequestInput {
+  amount: Decimal!
+  dueDate: DateTime!
+  paymentMethod: PaymentType!
+}
+
+"The purpose of the `cost` directive is to define a `weight` for GraphQL types, fields, and arguments. Static analysis can use these weights when calculating the overall cost of a query or response."
+directive @cost("The `weight` argument defines what value to add to the overall cost for every appearance, or possible appearance, of a type, field, argument, etc." weight: String!) on SCALAR | OBJECT | FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM | INPUT_FIELD_DEFINITION

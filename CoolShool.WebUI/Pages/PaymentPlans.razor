@@ -1,0 +1,141 @@
+@page "/plans"
+@using MudBlazor
+@using CoolShool.WebUI
+@using CoolShool.WebUI.Models
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 px-8">
+    <div class="d-flex flex-column mb-8">
+        <MudText Typo="Typo.h4" Style="font-family: 'Outfit'; font-weight: 700; letter-spacing: -0.02em; color: var(--mud-palette-text-primary);">
+            Planos de Pagamento
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+            Visualize e crie planos de cobrança parcelados para os responsáveis financeiros.
+        </MudText>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="d-flex flex-column align-center justify-center pa-12">
+            <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+            <MudText Class="mt-4" Color="Color.Primary">Carregando planos...</MudText>
+        </div>
+    }
+    else if (!_plans.Any())
+    {
+        <MudPaper Elevation="0" Class="pa-12 text-center rounded-xl border-1 border-dashed mud-border-lines-default bg-transparent">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" 
+                     Style="font-size: 80px; color: var(--mud-palette-action-disabled);" />
+            <MudText Typo="Typo.h6" Class="mt-4" Style="font-family: 'Outfit';">Nenhum plano de pagamento encontrado</MudText>
+            <MudText Typo="Typo.body2" Class="mud-text-secondary mt-2">
+                Crie um novo plano para começar a gerenciar as cobranças.
+            </MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddCard"
+                       OnClick="OpenCreateDialog" Class="mt-6 rounded-pill px-8 py-2">
+                Criar Primeiro Plano
+            </MudButton>
+        </MudPaper>
+    }
+    else
+    {
+        <MudPaper Elevation="0" Class="mud-elevation-0 border-1 border-solid mud-border-lines-default rounded-xl overflow-hidden">
+            <div class="d-flex align-center gap-4 pa-4 border-b-1 border-solid mud-border-lines-default bg-surface">
+                <MudTextField @bind-Value="_searchString" Immediate="true" Placeholder="Buscar responsável ou nº do plano..." 
+                              Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" 
+                              Class="max-w-md bg-transparent rounded-lg" />
+                <MudSpacer />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.AddCard"
+                           OnClick="OpenCreateDialog" Class="rounded-pill px-6 py-2">
+                    Novo Plano
+                </MudButton>
+            </div>
+
+            <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="pa-3">
+                @foreach (var plan in _plans.Where(FilterFunc))
+                {
+                    <MudExpansionPanel Class="mb-3 rounded-lg border-1 border-solid mud-border-lines-default mud-elevation-0 custom-panel">
+                        <TitleContent>
+                            <div class="d-flex align-center gap-4 w-100 flex-wrap">
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="min-width: 40px;">
+                                    #@plan.Id
+                                </MudText>
+                                <MudAvatar Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Style="font-size: 0.75rem; font-weight: 700;">
+                                    @(plan.OwnerName.Length > 0 ? plan.OwnerName[0].ToString().ToUpper() : "?")
+                                </MudAvatar>
+                                <MudText Typo="Typo.body1" Style="flex: 1; font-weight: 600; min-width: 150px;">
+                                    @plan.OwnerName
+                                </MudText>
+                                <MudChip T="string" Color="Color.Secondary" Size="Size.Small" Variant="Variant.Text" Class="bg-secondary-alpha-10">
+                                    @plan.CostCenterDisplayName
+                                </MudChip>
+                                <MudText Typo="Typo.body2" Class="mud-text-secondary" Style="min-width: 90px; text-align: right;">
+                                    @plan.Billings.Count parcela(s)
+                                </MudText>
+                                <MudText Typo="Typo.body1" Color="Color.Primary" Style="font-weight: 700; min-width: 120px; text-align: right;">
+                                    @plan.TotalAmount.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
+                                </MudText>
+                                @{
+                                    var paid = plan.Billings.Count(b => b.Status == BillingStatus.Paid);
+                                    var total = plan.Billings.Count;
+                                    var (chipColor, chipIcon) = paid == total && total > 0 
+                                        ? (Color.Success, Icons.Material.Filled.CheckCircle) 
+                                        : (Color.Warning, Icons.Material.Filled.Pending);
+                                    var chipLabel = paid == total && total > 0 ? "Quitado" : $"{paid}/{total} pagas";
+                                }
+                                <MudChip T="string" Color="@chipColor" Size="Size.Small" Icon="@chipIcon" Variant="Variant.Filled" Class="ml-auto rounded-lg px-3">
+                                    @chipLabel
+                                </MudChip>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <div class="pa-2">
+                                <MudSimpleTable Dense="true" Hover="true" Elevation="0" Class="rounded-lg border-1 border-solid mud-border-lines-default mt-2">
+                                    <thead>
+                                        <tr>
+                                            <th style="font-weight: 700;">ID</th>
+                                            <th style="font-weight: 700;">Valor</th>
+                                            <th style="font-weight: 700;">Vencimento</th>
+                                            <th style="font-weight: 700;">Método</th>
+                                            <th style="font-weight: 700; text-align: right;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var billing in plan.Billings)
+                                        {
+                                            <tr>
+                                                <td class="mud-text-secondary">#@billing.Id</td>
+                                                <td style="font-weight: 600;">@billing.Amount.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</td>
+                                                <td>@billing.DueDate.ToString("dd/MM/yyyy")</td>
+                                                <td>
+                                                    <div class="d-flex align-center gap-1">
+                                                        <MudIcon Icon="@(billing.PaymentMethod == PaymentType.Boleto ? Icons.Material.Filled.Article : Icons.Material.Filled.QrCode)"
+                                                                 Size="Size.Small" Class="mud-text-secondary" />
+                                                        <MudText Typo="Typo.body2">@billing.PaymentMethod</MudText>
+                                                    </div>
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    @{
+                                                        var (bColor, bLabel) = billing.Status switch
+                                                        {
+                                                            BillingStatus.Paid => (Color.Success, "Paga"),
+                                                            BillingStatus.Cancelled => (Color.Error, "Cancelada"),
+                                                            _ => (Color.Warning, "Pendente")
+                                                        };
+                                                    }
+                                                    <MudChip T="string" Color="@bColor" Size="Size.Small" Variant="Variant.Text" Class="bg-alpha-10 py-0 h-6">@bLabel</MudChip>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </MudSimpleTable>
+                            </div>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                }
+            </MudExpansionPanels>
+        </MudPaper>
+    }
+</MudContainer>
+

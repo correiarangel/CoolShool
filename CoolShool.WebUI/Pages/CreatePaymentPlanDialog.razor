@@ -1,0 +1,113 @@
+@using MudBlazor
+@using CoolShool.WebUI
+@using CoolShool.WebUI.Models
+
+<MudDialog Style="min-width: 680px;">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.AddCard" Class="mr-3 mb-n1" />
+            Novo Plano de Pagamento
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@_form" @bind-IsValid="@_formValid">
+            <!-- Responsável e Centro de Custo -->
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="long" Label="Responsável Financeiro" @bind-Value="_selectedOwnerId"
+                               Required="true" RequiredError="Selecione um responsável" Margin="Margin.Normal"
+                               AdornmentIcon="@Icons.Material.Filled.Person" Adornment="Adornment.Start">
+                        @foreach (var owner in _owners)
+                        {
+                            <MudSelectItem Value="@owner.Id">@owner.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudSelect T="long" Label="Centro de Custo" @bind-Value="_selectedCenterId"
+                               Required="true" RequiredError="Selecione um centro de custo" Margin="Margin.Normal"
+                               AdornmentIcon="@Icons.Material.Filled.Category" Adornment="Adornment.Start">
+                        @foreach (var center in _centers)
+                        {
+                            <MudSelectItem Value="@center.Id">@center.DisplayName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+
+            <MudDivider Class="my-4" />
+
+            <!-- Parcelas -->
+            <MudText Typo="Typo.subtitle1" Style="font-weight: 600;" Class="mb-2">
+                Parcelas
+                <MudChip T="string" Size="Size.Small" Color="Color.Primary" Class="ml-2">@_billings.Count</MudChip>
+            </MudText>
+
+            @for (int i = 0; i < _billings.Count; i++)
+            {
+                var idx = i;
+                var bill = _billings[idx];
+                <MudPaper Elevation="1" Class="pa-3 mb-3 rounded-lg" Style="border-left: 4px solid var(--mud-palette-primary);">
+                    <MudGrid Class="align-center">
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary); font-weight: 600;">
+                                PARCELA @(idx + 1)
+                            </MudText>
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudNumericField T="decimal" Label="Valor (R$)" @bind-Value="bill.Amount"
+                                            Required="true" Min="0.01M" Format="F2"
+                                            AdornmentText="R$" Adornment="Adornment.Start" Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="4">
+                            <MudDatePicker Label="Vencimento" @bind-Date="bill.DueDateNullable"
+                                           Required="true" MinDate="@DateTime.Today" Margin="Margin.Dense"
+                                           Placeholder="dd/MM/aaaa" DateFormat="dd/MM/yyyy" />
+                        </MudItem>
+                        <MudItem xs="10" sm="3">
+                            <MudSelect T="PaymentType" Label="Método" @bind-Value="bill.Method"
+                                       Required="true" Margin="Margin.Dense">
+                                <MudSelectItem Value="@PaymentType.Boleto">Boleto</MudSelectItem>
+                                <MudSelectItem Value="@PaymentType.Pix">PIX</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="2" sm="1">
+                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Color="Color.Error"
+                                           Size="Size.Small" OnClick="@(() => RemoveBilling(idx))"
+                                           Disabled="@(_billings.Count <= 1)" />
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+            }
+
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AddBilling" Class="mt-2" FullWidth="true">
+                Adicionar Parcela
+            </MudButton>
+
+            @if (_billings.Count > 0)
+            {
+                <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true">
+                    Total do Plano: <strong>@(_billings.Sum(b => b.Amount).ToString("C", new System.Globalization.CultureInfo("pt-BR")))</strong>
+                    em <strong>@_billings.Count parcela(s)</strong>
+                </MudAlert>
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="@_processing">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit"
+                   Disabled="@(_processing || !CanSubmit)" Class="rounded-pill px-6">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Salvando...</MudText>
+            }
+            else
+            {
+                <MudText>Criar Plano</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+

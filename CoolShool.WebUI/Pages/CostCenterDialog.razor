@@ -1,0 +1,44 @@
+@using MudBlazor
+@using CoolShool.WebUI
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(CenterId == 0 ? Icons.Material.Filled.Add : Icons.Material.Filled.Edit)" Class="mr-3 mb-n1" />
+            @(_title)
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="@_form" @bind-IsValid="@_success">
+            <MudSelect T="CostCenterType" Label="Tipo de Custo" @bind-Value="Type" Required="true" Margin="Margin.Normal">
+                <MudSelectItem Value="@CostCenterType.Matricula">Matrícula</MudSelectItem>
+                <MudSelectItem Value="@CostCenterType.Mensalidade">Mensalidade</MudSelectItem>
+                <MudSelectItem Value="@CostCenterType.Material">Material</MudSelectItem>
+                <MudSelectItem Value="@CostCenterType.Outro">Outro (Customizado)</MudSelectItem>
+            </MudSelect>
+            <MudTextField T="string" Label="Nome do Centro de Custo" @bind-Value="Name" 
+                          Required="@(Type == CostCenterType.Outro)"
+                          RequiredError="Nome é obrigatório para o tipo Outro"
+                          Placeholder="Ex: Uniformes, Taxas Extras, etc." Margin="Margin.Normal" />
+            
+            <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true">
+                Para o tipo <strong>Outro</strong>, o nome é obrigatório. Para os demais, se não informado, será usado o nome padrão do Tipo.
+            </MudAlert>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancelar</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Submit" Disabled="@(!_success || _processing)" 
+                   Class="rounded-pill px-6">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+            }
+            else
+            {
+                <MudText>Salvar</MudText>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+

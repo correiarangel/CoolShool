@@ -1,0 +1,161 @@
+@page "/billing"
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 px-8">
+    <div class="d-flex flex-column mb-8">
+        <MudText Typo="Typo.h4" Style="font-family: 'Outfit'; font-weight: 700; letter-spacing: -0.02em; color: var(--mud-palette-text-primary);">
+            Gestão de Cobranças
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+            Acompanhe e gerencie as parcelas emitidas e seus respectivos status de pagamento.
+        </MudText>
+    </div>
+
+    <MudTable Items="@_billings" Hover="true" Loading="@_isLoading" Elevation="0" 
+              Class="mud-elevation-0 border-1 border-solid mud-border-lines-default rounded-xl overflow-hidden" 
+              Filter="new Func<IGetBillings_Billings, bool>(FilterFunc)">
+        <ToolBarContent>
+            <div class="d-flex align-center gap-4 w-100 py-3">
+                <MudText Typo="Typo.h6" Style="font-family: 'Outfit'; font-weight: 600;">Parcelas Emitidas</MudText>
+                <MudSpacer />
+                <MudTextField @bind-Value="_searchString" Immediate="true" Placeholder="Buscar por ID ou Valor" 
+                              Variant="Variant.Outlined" Margin="Margin.Dense" Adornment="Adornment.Start" 
+                              AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" 
+                              Class="max-w-md bg-surface rounded-lg" />
+            </div>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Valor</MudTh>
+            <MudTh>Vencimento</MudTh>
+            <MudTh>Método</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align: right; padding-right: 24px;">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">
+                <MudText Typo="Typo.body2" Class="mud-text-secondary">#@context.Id</MudText>
+            </MudTd>
+            <MudTd DataLabel="Valor">
+                <MudText Typo="Typo.body1" Style="font-weight: 600;">@context.Amount.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudText>
+            </MudTd>
+            <MudTd DataLabel="Vencimento">@context.DueDate.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Método">
+                <div class="d-flex align-center gap-1">
+                    <MudIcon Icon="@(context.PaymentMethod == PaymentType.Boleto ? Icons.Material.Filled.Article : Icons.Material.Filled.QrCode)"
+                             Size="Size.Small" Class="mud-text-secondary" />
+                    <MudText Typo="Typo.body2">@context.PaymentMethod</MudText>
+                </div>
+            </MudTd>
+            <MudTd DataLabel="Status">
+                @{
+                    var (color, icon, label) = context.Status switch
+                    {
+                        BillingStatus.Paid => (Color.Success, Icons.Material.Filled.CheckCircle, "Pago"),
+                        BillingStatus.Cancelled => (Color.Default, Icons.Material.Filled.Block, "Cancelado"),
+                        _ => context.IsOverdue 
+                            ? (Color.Error, Icons.Material.Filled.Error, "Vencido") 
+                            : (Color.Info, Icons.Material.Filled.Schedule, "Emitido")
+                    };
+                }
+                <MudChip T="string" Color="@color" Icon="@icon" Size="Size.Small" Variant="Variant.Filled" Class="rounded-lg px-3">@label</MudChip>
+            </MudTd>
+            <MudTd DataLabel="Ações" Style="text-align: right; padding-right: 16px;">
+                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" Color="Color.Primary" Variant="Variant.Text" OnClick="@(() => OpenDetails(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <div class="pa-8 text-center">
+                <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Size="Size.Large" Color="Color.Default" />
+                <MudText Class="mt-2" Color="Color.Secondary">Nenhuma cobrança encontrada.</MudText>
+            </div>
+        </NoRecordsContent>
+        <LoadingContent>
+            <div class="pa-8 text-center">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" />
+                <MudText Class="mt-2" Color="Color.Primary">Carregando cobranças...</MudText>
+            </div>
+        </LoadingContent>
+        <PagerContent>
+            <MudTablePager InfoFormat="{first_item}-{last_item} de {all_items}" RowsPerPageString="Linhas por página:" Class="pt-2" />
+        </PagerContent>
+    </MudTable>
+</MudContainer>
+
+<MudDrawer @bind-Open="_drawerOpen" Anchor="Anchor.Right" Elevation="0" Variant="@DrawerVariant.Temporary" Width="440px" Class="mud-elevation-0 border-l-1 border-solid mud-border-lines-default">
+    <MudDrawerHeader Class="pa-6 border-b-1 border-solid mud-border-lines-default bg-surface">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="3">
+            <MudIcon Icon="@Icons.Material.Filled.Receipt" Color="Color.Primary" />
+            <MudText Typo="Typo.h6" Style="font-family: 'Outfit'; font-weight: 700;">Detalhes da Cobrança</MudText>
+        </MudStack>
+    </MudDrawerHeader>
+    <div class="pa-6">
+        @if (_selectedBilling != null)
+        {
+            <MudStack Spacing="6">
+                <MudPaper Class="pa-6 bg-surface border-1 border-solid mud-border-lines-default rounded-xl" Elevation="0">
+                    <div class="d-flex flex-column gap-1">
+                        <MudText Typo="Typo.overline" Style="font-weight: 700; color: var(--mud-palette-text-secondary);">COBRANÇA #@_selectedBilling.Id</MudText>
+                        <MudText Typo="Typo.h4" Color="Color.Primary" Style="font-family: 'Outfit'; font-weight: 700;">
+                            @_selectedBilling.Amount.ToString("C", new System.Globalization.CultureInfo("pt-BR"))
+                        </MudText>
+                        <div class="d-flex align-center gap-2 mt-1">
+                            <MudIcon Icon="@Icons.Material.Filled.Event" Size="Size.Small" Class="mud-text-secondary" />
+                            <MudText Typo="Typo.body2">Vencimento: <strong>@_selectedBilling.DueDate.ToString("dd/MM/yyyy")</strong></MudText>
+                        </div>
+                    </div>
+                </MudPaper>
+                
+                @if (_selectedBilling.Status == BillingStatus.Issued)
+                {
+                    <div class="d-flex flex-column gap-4">
+                        <MudText Typo="Typo.subtitle2" Style="font-family: 'Outfit'; font-weight: 700;">Confirmar Recebimento</MudText>
+                        <div class="d-flex gap-4">
+                            <MudDatePicker Label="Data Pagto" @bind-Date="_paymentDate" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-1" />
+                            <MudNumericField T="decimal" Label="Valor Pago" @bind-Value="_paymentAmount" Required="true" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Class="flex-1" />
+                        </div>
+
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Success" 
+                                   StartIcon="@Icons.Material.Filled.DoneAll" 
+                                   FullWidth="true" 
+                                   Class="rounded-pill py-3 mt-2 shadow-none" 
+                                   OnClick="RegisterPayment"
+                                   Disabled="@_isProcessing">
+                            @if (_isProcessing) { <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/> }
+                            else { <MudText Style="font-weight: 700;">Efetivar Baixa</MudText> }
+                        </MudButton>
+
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Error" 
+                                   StartIcon="@Icons.Material.Filled.DeleteForever" 
+                                   FullWidth="true" 
+                                   Class="rounded-pill py-3" 
+                                   OnClick="ConfirmCancelCharge"
+                                   Disabled="@_isProcessing">
+                            @if (_isProcessing) { <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true"/> }
+                            else { <MudText Style="font-weight: 700;">Cancelar Cobrança</MudText> }
+                        </MudButton>
+                    </div>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="rounded-xl border-1 border-solid mud-border-lines-default">
+                        Esta cobrança está com status <strong style="color: var(--mud-palette-primary);">@(_selectedBilling.Status == BillingStatus.Paid ? "PAGO" : "CANCELADO")</strong> e não permite alterações.
+                    </MudAlert>
+                }
+
+                <MudDivider Class="my-2" />
+                
+                <div class="d-flex flex-column gap-3">
+                    <MudText Typo="Typo.subtitle2" Style="font-family: 'Outfit'; font-weight: 700;">Dados para Recebimento (@_selectedBilling.PaymentMethod)</MudText>
+                    <MudPaper Elevation="0" Class="pa-4 bg-background border-1 border-solid mud-border-lines-default rounded-lg">
+                        <div style="font-family: 'JetBrains Mono', 'Cascadia Code', monospace; word-break: break-all; font-size: 0.85rem;" class="mud-text-secondary">
+                            @_selectedBilling.PaymentCode
+                        </div>
+                    </MudPaper>
+                </div>
+            </MudStack>
+        }
+    </div>
+</MudDrawer>

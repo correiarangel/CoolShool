@@ -1,0 +1,50 @@
+@page "/cost-centers"
+@using MudBlazor
+@using CoolShool.WebUI
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8">
+    <MudText Typo="Typo.h4" GutterBottom="true" Style="font-weight: 700; color: var(--mud-palette-primary);">
+        Centros de Custo
+    </MudText>
+    <MudText Typo="Typo.body1" Class="mb-8" Style="color: var(--mud-palette-text-secondary);">
+        Gerencie as categorias de cobrança do sistema.
+    </MudText>
+
+    <MudTable Items="@_centers" Loading="@_loading" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" 
+              Class="mud-elevation-1 rounded-lg" Style="overflow: hidden;"
+              Filter="new Func<IGetDashboardData_CostCenters, bool>(FilterFunc)">
+        <ToolBarContent>
+            <MudSpacer />
+            <MudTextField @bind-Value="_searchString" Immediate="true" Placeholder="Buscar centro de custo..." Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" 
+                       OnClick="OpenCreateDialog" Class="ml-4 rounded-pill">
+                Novo Centro de Custo
+            </MudButton>
+        </ToolBarContent>
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Tipo</MudTh>
+            <MudTh>Nome Personalizado</MudTh>
+            <MudTh>Exibição</MudTh>
+            <MudTh Style="text-align: right;">Ações</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="ID">@context.Id</MudTd>
+            <MudTd DataLabel="Tipo"><MudChip T="string" Color="Color.Primary" Size="Size.Small">@context.Type</MudChip></MudTd>
+            <MudTd DataLabel="Nome Personalizado">@context.Name</MudTd>
+            <MudTd DataLabel="Exibição" Style="font-weight: 600;">@context.DisplayName</MudTd>
+            <MudTd DataLabel="Ações" Style="text-align: right;">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Info" OnClick="@(() => OpenEditDialog(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => ConfirmDelete(context))" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText>Nenhum centro de custo encontrado.</MudText>
+        </NoRecordsContent>
+        <LoadingContent>
+            <MudText>Carregando centros de custo...</MudText>
+        </LoadingContent>
+    </MudTable>
+</MudContainer>
+

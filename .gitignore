@@ -1,0 +1,21 @@
+## --- [ Pastas de Compilação (Onde ficam os 'bin' e 'obj') ] ---
+# Isso vai ignorar o 'bin' e 'obj' de TODOS os seus projetos (WebUI, WebApi, Domain, etc.)
+[Bb]in/
+[Oo]bj/
+
+## --- [ Visual Studio & VS Code ] ---
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## --- [ Pacotes e Resultados de Testes ] ---
+packages/
+TestResults/
+bin/Roslyn/
+
+## --- [ Arquivos de Sistema ] ---
+.DS_Store
+Thumbs.db

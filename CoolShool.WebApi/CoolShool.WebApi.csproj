@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.12" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Scalar.AspNetCore" Version="2.13.11" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoolShool.Application\CoolShool.Application.csproj" />
+    <ProjectReference Include="..\CoolShool.Domain\CoolShool.Domain.csproj" />
+    <ProjectReference Include="..\CoolShool.Infrastructure\CoolShool.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

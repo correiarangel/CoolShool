@@ -1,0 +1,159 @@
+@page "/"
+@using MudBlazor
+
+<PageTitle>Dashboard - CoolSchool</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 px-8">
+    <div class="d-flex flex-column mb-8">
+        <MudText Typo="Typo.h4" Style="font-family: 'Outfit'; font-weight: 700; letter-spacing: -0.02em; color: var(--mud-palette-text-primary);">
+            Dashboard Financeiro
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mud-text-secondary mt-1">
+            Visão geral da saúde financeira e acompanhamento de recebíveis da instituição.
+        </MudText>
+    </div>
+
+    @if (_isLoading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="120px" Class="rounded-xl" />
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (_error != null)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4 rounded-xl">@_error</MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="4">
+            <!-- KPIs -->
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="0" Class="pa-6 rounded-xl border-1 border-solid mud-border-lines-default bg-surface h-100">
+                    <div class="d-flex justify-space-between align-start mb-2">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="font-weight: 700; text-transform: uppercase;">FATURAMENTO TOTAL</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Payments" Color="Color.Primary" Size="Size.Small" />
+                    </div>
+                    <MudText Typo="Typo.h5" Style="font-family: 'Outfit'; font-weight: 700; color: var(--mud-palette-text-primary);">@_totalGeral.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudText>
+                    <div class="d-flex align-center gap-1 mt-2">
+                        <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Color="Color.Success" Size="Size.Small" />
+                        <MudText Typo="Typo.caption" Color="Color.Success" Style="font-weight: 600;">+12% este mês</MudText>
+                    </div>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="0" Class="pa-6 rounded-xl border-1 border-solid mud-border-lines-default bg-surface h-100">
+                    <div class="d-flex justify-space-between align-start mb-2">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="font-weight: 700; text-transform: uppercase;">TOTAL RECEBIDO</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                    </div>
+                    <MudText Typo="Typo.h5" Style="font-family: 'Outfit'; font-weight: 700; color: var(--mud-palette-success);">@_totalRecebido.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudText>
+                    <MudProgressLinear Color="Color.Success" Value="@((double)(_totalRecebido / (_totalGeral > 0 ? _totalGeral : 1)) * 100)" Class="mt-3 rounded-pill" />
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="0" Class="pa-6 rounded-xl border-1 border-solid mud-border-lines-default bg-surface h-100">
+                    <div class="d-flex justify-space-between align-start mb-2">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="font-weight: 700; text-transform: uppercase;">TOTAL PENDENTE</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.PendingActions" Color="Color.Info" Size="Size.Small" />
+                    </div>
+                    <MudText Typo="Typo.h5" Style="font-family: 'Outfit'; font-weight: 700; color: var(--mud-palette-info);">@_totalPendente.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudText>
+                    <MudText Typo="Typo.caption" Class="mud-text-secondary mt-2 d-block">Aguardando vencimento</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudPaper Elevation="0" Class="pa-6 rounded-xl border-1 border-solid mud-border-lines-default bg-surface h-100">
+                    <div class="d-flex justify-space-between align-start mb-2">
+                        <MudText Typo="Typo.caption" Class="mud-text-secondary" Style="font-weight: 700; text-transform: uppercase;">TOTAL ATRASADO</MudText>
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Small" />
+                    </div>
+                    <MudText Typo="Typo.h5" Style="font-family: 'Outfit'; font-weight: 700; color: var(--mud-palette-error);">@_totalAtrasado.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudText>
+                    @{
+                        var percentAtrasado = (_totalAtrasado / (_totalGeral > 0 ? _totalGeral : 1)) * 100;
+                    }
+                    <MudText Typo="Typo.caption" Color="Color.Error" Style="font-weight: 600;" Class="mt-2 d-block">@percentAtrasado.ToString("F1")% do total geral</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Gráfico -->
+            <MudItem xs="12" md="5">
+                <MudCard Elevation="0" Class="rounded-xl border-1 border-solid mud-border-lines-default bg-surface h-100 overflow-hidden">
+                    <MudCardHeader Class="border-b-1 border-solid mud-border-lines-default px-6 py-4">
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6" Style="font-family: 'Outfit'; font-weight: 600;">Destinação por Centro de Custo</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                             <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Default" />
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent Class="d-flex flex-column align-center justify-center pa-8" Style="min-height: 380px;">
+                        @if (_chartSeries.Count > 0 && _chartSeries.First().Data != null && _chartSeries.First().Data.Any())
+                        {
+                            <MudChart T="double" ChartType="ChartType.Donut" 
+                                      ChartSeries="@(_chartSeries)" 
+                                      ChartLabels="@_chartLabels" 
+                                      Width="280px" Height="280px" />
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-column align-center">
+                                <MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Large" Color="Color.Default" Style="font-size: 64px;" />
+                                <MudText Class="mt-4" Color="Color.Secondary">Sem dados suficientes para o gráfico.</MudText>
+                            </div>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Próximos Vencimentos -->
+            <MudItem xs="12" md="7">
+                <MudCard Elevation="0" Class="rounded-xl border-1 border-solid mud-border-lines-default bg-surface h-100 overflow-hidden">
+                    <MudCardHeader Class="border-b-1 border-solid mud-border-lines-default px-6 py-4">
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6" Style="font-family: 'Outfit'; font-weight: 600;">Próximos Vencimentos</MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <MudButton Href="/billing" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward" Class="rounded-pill">Ver Tudo</MudButton>
+                        </CardHeaderActions>
+                    </MudCardHeader>
+                    <MudCardContent Class="pa-0">
+                        <MudTable Items="@_upcomingBillings" Dense="false" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Class="bg-transparent">
+                            <HeaderContent>
+                                <MudTh>Data</MudTh>
+                                <MudTh>Responsável</MudTh>
+                                <MudTh>Valor</MudTh>
+                                <MudTh Style="text-align: right;">Status</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Data">
+                                    <MudText Typo="Typo.body2" Class="mud-text-secondary">@context.DueDate.ToString("dd/MM/yyyy")</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Responsável">
+                                    <MudText Typo="Typo.body2" Style="font-weight: 600;">@context.OwnerName</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Valor">
+                                    <MudText Typo="Typo.body2" Color="Color.Primary" Style="font-weight: 700;">@context.Amount.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudText>
+                                </MudTd>
+                                <MudTd DataLabel="Status" Style="text-align: right;">
+                                    <MudChip T="string" Color="Color.Info" Size="Size.Small" Variant="Variant.Text" Class="bg-info-alpha-10 rounded-lg px-3">@context.Status</MudChip>
+                                </MudTd>
+                            </RowTemplate>
+                            <NoRecordsContent>
+                                <div class="pa-8 text-center">
+                                    <MudText Color="Color.Secondary">Nenhum vencimento pendente.</MudText>
+                                </div>
+                            </NoRecordsContent>
+                        </MudTable>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>

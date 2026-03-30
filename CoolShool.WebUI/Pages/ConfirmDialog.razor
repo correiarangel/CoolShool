@@ -1,0 +1,20 @@
+@using MudBlazor
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mr-3 mb-n1" />
+            @Title
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>@((MarkupString)Message)</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@CancelText</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="Confirm" Class="rounded-pill px-6">
+            @ConfirmText
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+

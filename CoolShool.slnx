@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/CoolShool/">
+    <Project Path="CoolShool.Application/CoolShool.Application.csproj" />
+    <Project Path="CoolShool.Domain/CoolShool.Domain.csproj" />
+    <Project Path="CoolShool.Infrastructure/CoolShool.Infrastructure.csproj" />
+    <Project Path="CoolShool.WebApi/CoolShool.WebApi.csproj" />
+    <Project Path="CoolShool.WebUI/CoolShool.WebUI.csproj" Id="1461410c-4dc6-4f63-bf83-40e02ffbcd6d" />
+  </Folder>
+</Solution>
