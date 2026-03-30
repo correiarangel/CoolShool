@@ -378,3 +378,5 @@ CoolSchool/
 ---
 
 Marcos Rangel
+
+Total: 40h  
