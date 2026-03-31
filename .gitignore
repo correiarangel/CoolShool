@@ -19,3 +19,8 @@ bin/Roslyn/
 ## --- [ Arquivos de Sistema ] ---
 .DS_Store
 Thumbs.db
+
+CoolShool.WebApi/appsettings*.json
+CoolShool.WebApi/appsettings.Development.json
+CoolShool.WebApi/appsettings.json
+CoolShool.WebApi/Properties/launchSettings.json
