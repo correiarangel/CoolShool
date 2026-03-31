@@ -6,6 +6,7 @@ CoolSchool simula uma plataforma para gerenciar planos de pagamento de responsá
 A ideia central é simples: uma instituição precisa organizar cobranças, saber quem pagou, quem está em atraso e gerar os dados de pagamento (boleto ou pix) de forma automática. 
 Este projeto propoem resolve o usando uma API, uma camada GraphQL e uma interface visual simplificada.
 
+(Dashboard) [https://github.com/correiarangel/CoolShool/blob/main/Screenshot_dashboard.png]
 ---
 
 ## O que o sistema faz
