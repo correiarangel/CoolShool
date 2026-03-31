@@ -4,13 +4,15 @@
 
 CoolSchool simula uma plataforma para gerenciar planos de pagamento de responsáveis financeiros. 
 A ideia central é simples: uma instituição precisa organizar cobranças, saber quem pagou, quem está em atraso e gerar os dados de pagamento (boleto ou pix) de forma automática. 
-Este projeto propoem resolve isso com uma API, e uma camada GraphQL e uma interface visual simplificada.
+Este projeto propoem resolve o usando uma API, uma camada GraphQL e uma interface visual simplificada.
 
 ---
 
 ## O que o sistema faz
 
-Cada plano de pagamento pertence a um responsável financeiro e está ligado a um centro de custo (por exemplo: Matrícula, Mensalidade ou Material). Dentro de cada plano existem as cobranças, que são as parcelas individuais. Cada cobrança tem valor, data de vencimento, método de pagamento e um código gerado automaticamente.
+Cada plano de pagamento pertence a um responsável financeiro e está ligado a um centro de custo (por exemplo: Matrícula, Mensalidade ou Material). 
+Dentro de cada plano existem as cobranças, que são as parcelas individuais. 
+Cada cobrança tem valor, data de vencimento, método de pagamento e um código gerado automaticamente.
 
 O sistema cuida de:
 
@@ -68,7 +70,7 @@ erDiagram
 
 ### .NET 9 com C# 12
 
-O projeto foi feito em .NET 9. A versão 10 foi descartada porque o SDK local ainda não tinha suporte completo e causava incompatibilidade com o gerador de código do cliente GraphQL. C# 12 foi adotado para aproveitar os Primary Constructors, que deixam a injeção de dependência mais limpa e direta.
+O projeto foi feito em .NET 9, C# 12 foi adotado para aproveitar os Primary Constructors, que deixam a injeção de dependência mais limpa e direta.
 
 ### PostgreSQL com Entity Framework Core
 
@@ -76,7 +78,9 @@ O banco de dados escolhido foi o PostgreSQL. O acesso ao banco é feito via Enti
 
 ### Clean Architecture e DDD
 
-O projeto segue Clean Architecture. Isso significa que o código está dividido em camadas com dependências que sempre apontam para dentro, em direção ao domínio. O domínio não sabe nada sobre banco de dados ou API. Quem depende de quem:
+O projeto segue Clean Architecture, o código está dividido em camadas com dependências que sempre apontam para o domínio. 
+O domínio não sabe nada sobre banco de dados ou API. 
+Quem depende de quem:
 
 - Domain: entidades, enums e interfaces de repositório. Não depende de nada.
 - Infrastructure: implementa os repositórios usando EF Core. Depende do Domain.
@@ -86,41 +90,56 @@ O projeto segue Clean Architecture. Isso significa que o código está dividido 
 
 ### DTOs e Contratos de Entrada e Saída
 
-As entidades de domínio nunca são devolvidas diretamente pela API. Isso evita dois problemas conhecidos: o over-posting, onde alguém envia campos que não deveria, e os loops de serialização que acontecem quando as entidades têm referências circulares. Em vez disso, a camada de Application usa classes de Request e Response como contratos fixos.
+As entidades de domínio nunca são devolvidas diretamente pela API. 
+Isso evita dois problemas conhecidos: o over-posting, onde alguém envia campos que não deveria, e os loops de serialização que acontecem quando as entidades têm referências circulares. 
+Em vez disso, a camada de Application usa classes de Request e Response como contratos fixos.
 
 ### Result Pattern
 
-Os serviços não lançam exceções para representar erros de regra de negócio. Em vez disso, retornam um objeto `Result<T>` que pode conter um valor de sucesso ou uma mensagem de erro. Isso deixa o fluxo de erro explícito e previsível, e evita que exceções sejam usadas como controle de fluxo.
+Os serviços não lançam exceções para representar erros de regra de negócio. 
+Em vez disso, retornam um objeto `Result<T>` que pode conter um valor de sucesso ou uma mensagem de erro. 
+Isso deixa o fluxo de erro explícito e previsível, e evita que exceções sejam usadas como controle de fluxo.
 
 ### REST e GraphQL lado a lado
 
-A API expõe dois protocolos: REST tradicional e GraphQL via HotChocolate. A decisão foi manter ambos como portas de entrada na camada WebApi. A camada de Application não sabe qual protocolo está sendo usado, ela apenas executa a lógica. Isso significa que REST e GraphQL consomem os mesmos serviços, com as mesmas validações, sem duplicar código.
+A API expõe dois protocolos: REST tradicional e GraphQL via HotChocolate. 
+A decisão foi manter ambos como portas de entrada na camada WebApi. 
+A camada de Application não sabe qual protocolo está sendo usado, ela apenas executa a lógica. 
+Isso significa que REST e GraphQL consomem os mesmos serviços, com as mesmas validações, sem duplicar código.
 
 A camada de Application fica completamente isolada de bibliotecas web como HotChocolate ou ASP.NET MVC. Isso protege o código central do sistema de mudanças de infraestrutura.
 
 ### DataLoaders no GraphQL
 
-O maior problema de performance em APIs GraphQL é o chamado problema N+1. Se você listar 10 responsáveis e quiser os planos de cada um, sem cuidado o sistema faria 1 consulta para os responsáveis e 10 consultas para os planos. O DataLoader resolve isso capturando todos os IDs de uma vez e fazendo uma única consulta com `IN (...)` no banco, distribuindo os resultados em memória.
+O maior problema de performance em APIs GraphQL é o chamado problema N+1. 
+Se você listar 10 responsáveis e quiser os planos de cada um, sem cuidado o sistema faria 1 consulta para os responsáveis e 10 consultas para os planos.
+O DataLoader resolve isso capturando todos os IDs de uma vez e fazendo uma única consulta com `IN (...)` no banco, distribuindo os resultados em memória.
 
 ### Segurança no GraphQL
 
-Duas proteções foram implementadas. A primeira limita a profundidade de execução das queries (Depth Limit) para impedir que alguém crie uma query aninhada infinita que travaria o servidor. A segunda desabilita a introspecção em produção, que é o recurso que permite ao cliente "mapear" o schema inteiro da API. Com isso desabilitado, um atacante não consegue explorar a estrutura da API apenas observando o schema.
+Duas proteções foram implementadas. 
+A primeira limita a profundidade de execução das queries (Depth Limit) para impedir que alguém crie uma query aninhada infinita que travaria o servidor. 
+A segunda desabilita a introspecção em produção, que é o recurso que permite ao cliente "mapear" o schema inteiro da API. 
+Com isso desabilitado, um atacante não consegue explorar a estrutura da API apenas observando o schema.
 
 Em desenvolvimento, o limite de profundidade foi aumentado para 15 porque o cliente StrawberryShake usa queries de introspecção profundas para entender o schema e gerar o código automaticamente.
 
 ### Blazor WebAssembly com MudBlazor
 
-A interface foi desenvolvida em Blazor WebAssembly, que roda C# direto no navegador. Para os componentes visuais foi usado o MudBlazor, que oferece tabelas, gráficos, modais e drawers com visual profissional pronto para uso.
+A interface foi desenvolvida em Blazor WebAssembly, que roda C# direto no navegador. 
+Para os componentes visuais foi usado o MudBlazor, que oferece tabelas, gráficos, modais e drawers com visual profissional pronto para uso.
 
 A escolha do Blazor mantém C# de ponta a ponta, permitindo que o time compartilhe conhecimento entre o cliente e o servidor.
 
 ### StrawberryShake como cliente GraphQL
 
-Para consumir o GraphQL no frontend, foi escolhido o StrawberryShake. Ele lê o schema do backend e gera automaticamente o código do cliente em C#, com tipos fortes. Isso significa que se a API mudar e o contrato quebrar, o erro aparece em tempo de compilação, não em produção.
+Para consumir o GraphQL no frontend, foi escolhido o StrawberryShake. Ele lê o schema do backend e gera automaticamente o código do cliente em C#, com tipos fortes. 
+Se a API mudar e o contrato quebrar, o erro aparece em tempo de compilação, não em produção.
 
 ### CORS em desenvolvimento
 
-O Blazor WebAssembly roda no navegador em uma porta diferente da API. O navegador bloqueia chamadas entre origens diferentes por padrão. Por isso o CORS foi configurado no backend com política aberta em desenvolvimento, e o redirecionamento de HTTP para HTTPS foi desabilitado, porque esse redirecionamento em chamadas cross-origin costuma ser bloqueado pelos navegadores e causava o erro "Failed to fetch".
+O Blazor WebAssembly roda no navegador em uma porta diferente da API. 
+O navegador bloqueia chamadas entre origens diferentes por padrão. Por isso o CORS foi configurado no backend com política aberta em desenvolvimento, e o redirecionamento de HTTP para HTTPS foi desabilitado, porque esse redirecionamento em chamadas cross-origin costuma ser bloqueado pelos navegadores e causava o erro "Failed to fetch".
 
 ---
 
