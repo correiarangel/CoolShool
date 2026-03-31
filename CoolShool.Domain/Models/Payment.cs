@@ -8,7 +8,6 @@ public class Payment
     public DateTime PaymentDate { get; private set; }
     public decimal Amount { get; private set; }
 
-    /// <summary>EF Core: construtor protegido para materialização.</summary>
     protected Payment() { }
 
     /// <param name="amount">Valor pago.</param>

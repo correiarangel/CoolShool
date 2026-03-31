@@ -31,10 +31,10 @@ public sealed class BillingService(IBillingRepository repository) : IBillingServ
     public async Task<Result> RegisterPaymentAsync(long billingId, RegisterPaymentRequest request, CancellationToken ct = default)
     {
         var billing = await repository.GetByIdAsync(billingId, ct);
-        if (billing == null) 
+        if (billing == null)
             return Result.Failure("Cobrança não encontrada.");
 
-        try 
+        try
         {
             billing.RegisterPayment(request.Amount, request.PaymentDate);
             await repository.SaveChangesAsync(ct);
@@ -52,7 +52,7 @@ public sealed class BillingService(IBillingRepository repository) : IBillingServ
         if (billing == null)
             return Result.Failure("Cobrança não encontrada.");
 
-        try 
+        try
         {
             billing.Cancel();
             await repository.SaveChangesAsync(ct);

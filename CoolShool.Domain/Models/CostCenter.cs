@@ -19,7 +19,6 @@ public class CostCenter
     private readonly List<PaymentPlan> _paymentPlans = [];
     public IReadOnlyCollection<PaymentPlan> PaymentPlans => _paymentPlans;
 
-    /// <summary>EF Core: construtor protegido para materialização.</summary>
     protected CostCenter() { }
 
     /// <summary>Centro de custo padrão via enum.</summary>

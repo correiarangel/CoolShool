@@ -16,7 +16,6 @@ public class PaymentPlan
     /// <summary>Total calculado — NÃO persistido. Soma dos valores de todas as cobranças.</summary>
     public decimal TotalAmount => _billings.Sum(b => b.Amount);
 
-    /// <summary>EF Core: construtor protegido para materialização.</summary>
     protected PaymentPlan() { }
 
     public PaymentPlan(long financialOwnerId, long costCenterId)
@@ -25,8 +24,13 @@ public class PaymentPlan
         CostCenterId = costCenterId;
     }
 
-    // ────────────────────── Comportamento de domínio ──────────────────────
-
+    /// <summary>
+    /// Comportamento de domínio 
+    /// </summary>
+    /// <param name="amount"></param>
+    /// <param name="dueDate"></param>
+    /// <param name="paymentMethod"></param>
+    /// <exception cref="ArgumentException"></exception>
     public void AddBilling(decimal amount, DateTime dueDate, PaymentType paymentMethod)
     {
         if (amount <= 0)

@@ -86,8 +86,8 @@ public class Billing
     private static string GeneratePaymentCode(PaymentType method) => method switch
     {
         PaymentType.BOLETO => GenerateBoletoCode(),
-        PaymentType.PIX    => GeneratePixCode(),
-        _                  => string.Empty
+        PaymentType.PIX => GeneratePixCode(),
+        _ => string.Empty
     };
 
     /// <summary>BOLETO: linha digitável simulada — 23 caracteres numéricos.</summary>

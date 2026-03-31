@@ -8,7 +8,6 @@ public class FinancialOwner
     private readonly List<PaymentPlan> _paymentPlans = [];
     public IReadOnlyCollection<PaymentPlan> PaymentPlans => _paymentPlans;
 
-    /// <summary>EF Core: construtor protegido para materialização.</summary>
     protected FinancialOwner() { }
 
     public FinancialOwner(string name)
