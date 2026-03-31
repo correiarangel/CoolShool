@@ -63,16 +63,4 @@ public sealed class BillingService(IBillingRepository repository) : IBillingServ
             return Result.Failure(ex.Message);
         }
     }
-
-    public async Task<Result> DeleteAsync(long id, CancellationToken ct = default)
-    {
-        var billing = await repository.GetByIdAsync(id, ct);
-        if (billing == null)
-            return Result.Failure("Cobrança não encontrada.");
-
-        repository.Remove(billing);
-        await repository.SaveChangesAsync(ct);
-
-        return Result.Success();
-    }
 }

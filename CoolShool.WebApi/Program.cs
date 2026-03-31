@@ -32,13 +32,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
-// Register Repositories
 builder.Services.AddScoped<IFinancialOwnerRepository, FinancialOwnerRepository>();
 builder.Services.AddScoped<IPaymentPlanRepository, PaymentPlanRepository>();
 builder.Services.AddScoped<IBillingRepository, BillingRepository>();
 builder.Services.AddScoped<ICostCenterRepository, CostCenterRepository>();
 
-// Register Application Services
 builder.Services.AddScoped<IFinancialOwnerService, FinancialOwnerService>();
 builder.Services.AddScoped<ICostCenterService, CostCenterService>();
 builder.Services.AddScoped<IPaymentPlanService, PaymentPlanService>();
@@ -52,12 +50,12 @@ builder.Services
     .AddType<PaymentPlanType>()
     .AddType<BillingType>()
     .AddDataLoader<PaymentPlanBatchDataLoader>()
-    // 🔒 Crítico: limite de profundidade de queries — previne DoS
+    /// Crítico: limite de profundidade de queries — previne DoS
     .AddMaxExecutionDepthRule(5)
-    // 🔒 Crítico: detalhes de exceção apenas em desenvolvimento
+    /// Crítico: detalhes de exceção apenas em desenvolvimento
     .ModifyRequestOptions(opt =>
         opt.IncludeExceptionDetails = builder.Environment.IsDevelopment())
-    // 🔒 Crítico: introspecção desabilitada em produção (segurança)
+    /// Crítico: introspecção desabilitada em produção (segurança)
     .DisableIntrospection(!builder.Environment.IsDevelopment());
 
 var app = builder.Build();

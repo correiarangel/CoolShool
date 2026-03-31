@@ -36,11 +36,6 @@ public class BillingRepository(AppDbContext context) : IBillingRepository
       .ToListAsync(cancellationToken: ct);
     }
 
-    public void Remove(Billing billing)
-    {
-        _context.Billings.Remove(billing);
-    }
-
     public async Task SaveChangesAsync(CancellationToken ct = default)
     {
         await _context.SaveChangesAsync(ct);

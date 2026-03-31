@@ -12,7 +12,6 @@ public class Billing
     public BillingStatus Status { get; private set; }
     public decimal Amount { get; private set; }
     public string PaymentCode { get; private set; } = string.Empty;
-
     private readonly List<Payment> _payments = [];
     public IReadOnlyCollection<Payment> Payments => _payments;
 
@@ -31,8 +30,11 @@ public class Billing
         PaymentCode = GeneratePaymentCode(paymentMethod);
     }
 
-    // ────────────────────── Comportamento de domínio ──────────────────────
-
+    /// <summary>
+    /// Comportamento de domínio
+    /// </summary>
+    /// <param name="amount"></param>
+    /// <param name="paymentDate"></param>
     public void RegisterPayment(decimal amount, DateTime? paymentDate = null)
     {
         if (Status == BillingStatus.CANCELLED)
@@ -66,16 +68,21 @@ public class Billing
     public bool IsOverdue =>
         Status == BillingStatus.ISSUED && DateTime.UtcNow.Date > DueDate.Date;
 
-    // ────────────────────── Linkage interno (EF navigation) ──────────────────────
-
+    /// <summary>
+    /// Linkage interno (EF navigation)
+    /// </summary>
+    /// <param name="plan"></param>
     internal void AssignToPaymentPlan(PaymentPlan plan)
     {
         PaymentPlanId = plan.Id;
         Plan = plan;
     }
 
-    // ────────────────────── Helpers privados ──────────────────────
-
+    /// <summary>
+    /// Helpers privados para geração de códigos de pagamento simulados.
+    /// </summary>
+    /// <param name="method"></param>
+    /// <returns></returns>
     private static string GeneratePaymentCode(PaymentType method) => method switch
     {
         PaymentType.BOLETO => GenerateBoletoCode(),

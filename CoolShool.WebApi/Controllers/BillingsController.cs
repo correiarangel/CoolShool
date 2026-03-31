@@ -31,13 +31,4 @@ public sealed class BillingsController(IBillingService service) : ControllerBase
         
         return NoContent();
     }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(long id)
-    {
-        var result = await service.DeleteAsync(id);
-        if (result.IsFailure) return BadRequest(result.Error);
-        
-        return NoContent();
-    }
 }

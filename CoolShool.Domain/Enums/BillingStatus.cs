@@ -3,7 +3,7 @@
 /// <summary>Status persistido da cobrança.</summary>
 public enum BillingStatus
 {
-    ISSUED    = 0,  // Emitida (status inicial)
-    PAID      = 1,  // Paga
-    CANCELLED = 2,  // Cancelada
+    ISSUED = 0,
+    PAID = 1,
+    CANCELLED = 2,
 }

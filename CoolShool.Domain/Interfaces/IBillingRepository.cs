@@ -7,7 +7,6 @@ public interface IBillingRepository
     Task<IEnumerable<Billing>> GetAllAsync(CancellationToken ct = default);
     Task<IEnumerable<Billing>> GetByOwnerAsync(long financialOwnerId, CancellationToken ct = default);
     Task<int> CountByOwnerAsync(long financialOwnerId, CancellationToken ct = default);
-    void Remove(Billing billing);
     Task SaveChangesAsync(CancellationToken ct = default);
 
 }

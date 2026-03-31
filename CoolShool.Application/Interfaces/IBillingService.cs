@@ -10,5 +10,4 @@ public interface IBillingService
     Task<Result<int>> GetCountByOwnerAsync(long ownerId, CancellationToken ct = default);
     Task<Result> RegisterPaymentAsync(long billingId, RegisterPaymentRequest request, CancellationToken ct = default);
     Task<Result> CancelAsync(long id, CancellationToken ct = default);
-    Task<Result> DeleteAsync(long id, CancellationToken ct = default);
 }
